@@ -1,6 +1,6 @@
 import { Box, Loader } from 'rimble-ui'
 import PageHead from '../components/PageHead'
-import { core, initializeDb } from '../daf/setup'
+import { core } from '../daf/setup'
 
 const Welcome = ({ issuer }) => {
   console.log('Issuer', issuer)
@@ -21,7 +21,6 @@ const Welcome = ({ issuer }) => {
 }
 
 export async function getServerSideProps(context) {
-  await initializeDb()
   await core.setupServices()
   await core.listen()
 
@@ -35,7 +34,7 @@ export async function getServerSideProps(context) {
   }
 
   return {
-    props: { issuer: data[0].did }, // will be passed to the page component as props
+    props: { issuer: 'OK' }, // will be passed to the page component as props
   }
 }
 

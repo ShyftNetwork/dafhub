@@ -9,7 +9,6 @@ import * as URL from 'daf-url'
 import * as DafEthrDid from 'daf-ethr-did'
 import * as DafLibSodium from 'daf-libsodium'
 import { DafResolver } from 'daf-resolver'
-import { createConnection } from 'typeorm'
 
 const infuraProjectId = '5ffc47f65c4042ce847ef66a3fa70d4c'
 
@@ -47,13 +46,10 @@ export const core = new Daf.Core({
   actionHandler,
 })
 
-export const initializeDb = async () => {
-  await createConnection({
-    name: 'default',
-    type: 'sqlite',
-    database: './database.sqlite',
-    synchronize: true,
-    logging: false,
-    entities: [...Daf.Entities],
-  })
+export const config = {
+  type: 'sqlite',
+  database: './database.sqlite',
+  synchronize: true,
+  logging: false,
+  entities: [...Daf.Entities],
 }
