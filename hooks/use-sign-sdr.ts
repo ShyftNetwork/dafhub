@@ -1,14 +1,14 @@
-import { mutate } from 'swr'
 import fetch from '../libs/fetch'
 
-async function useSignSDR(tag: string) {
-  return mutate(
-    '/api/sign-sdr',
-    await fetch('/api/sign-sdr', {
-      method: 'POST',
-      body: JSON.stringify({ tag }),
-    }),
-  )
+async function useSignSDR(threadId: string) {
+  return await fetch('/api/sign-sdr', {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ threadId }),
+  })
 }
 
 export default useSignSDR

@@ -10,7 +10,35 @@ import {
   Link,
 } from 'rimble-ui'
 
-const RequestModal = ({ isOpen, requestType }) => {
+const REQUEST_TYPES = {
+  CREDENTIAL_ISSUE: 'CREDENTIAL_ISSUE',
+  SELECTIVE_DISCLOSURE_RESPONSE: 'SELECTIVE_DISCLOSURE_RESPONSE',
+}
+
+const TEXT: { [index: string]: { [index: string]: string } } = {
+  CREDENTIAL_ISSUE: {
+    title: 'You have been issued a credential',
+    body: 'Accept the credential that has appeared on your device',
+    response: 'Waiting for you to accept...',
+    complete:
+      'Great! You have accepted the credential. You can close this modal now.',
+  },
+  SELECTIVE_DISCLOSURE_RESPONSE: {
+    title: 'You have been requested to share information',
+    body: 'Tap share on your device to share',
+    response: 'Waiting for you to share...',
+    complete:
+      'Thanks! We received your credentials. You can now close this modal.',
+  },
+}
+
+const RequestModal = ({
+  isOpen,
+  requestType,
+  sdrCredentials,
+  closeModal,
+  loading,
+}) => {
   return (
     <Modal isOpen={isOpen}>
       <Card p={0} borderRadius={1}>
@@ -22,11 +50,10 @@ const RequestModal = ({ isOpen, requestType }) => {
           p={[3, 4]}
           pb={3}
         >
-          <Icon name="Person" color="primary" aria-hidden="true" />
           <Heading textAlign="center" as="h1" fontSize={[2, 3]} px={[3, 0]}>
-            You have been issued a credential
+            {isOpen && TEXT[requestType].title}
           </Heading>
-          <Link>
+          <Link onClick={closeModal}>
             <Icon
               name="Close"
               color="moon-gray"
@@ -35,23 +62,43 @@ const RequestModal = ({ isOpen, requestType }) => {
           </Link>
         </Flex>
         <Box p={[3, 4]}>
-          <Text textAlign="center">
-            Accept the credential that has appeared on your device
-          </Text>
+          <Text textAlign="center">{isOpen && TEXT[requestType].body}</Text>
         </Box>
         <Box px={[3, 4]} pb={[3, 4]}>
-          <Flex
-            flexDirection={['column', 'row']}
-            bg={'primary-2x-light'}
-            p={[3, 4]}
-            alignItems={['center', 'auto']}
-          >
-            <Loader size={'3em'} mr={[0, 3]} mb={[2, 0]} />
-            <Flex flexDirection="column" alignItems={['center', 'flex-start']}>
-              <Text fontWeight={4}>Waiting for you to accept...</Text>
-              <Text fontWeight={2}>This won’t cost you any Ether</Text>
+          {loading ? (
+            <Flex
+              flexDirection={['column', 'row']}
+              bg={'primary-2x-light'}
+              p={[3, 4]}
+              alignItems={['center', 'auto']}
+            >
+              <Loader size={'3em'} mr={[0, 3]} mb={[2, 0]} />
+              <Flex
+                flexDirection="column"
+                alignItems={['center', 'flex-start']}
+              >
+                <Text fontWeight={4}>
+                  {isOpen && TEXT[requestType].response}
+                </Text>
+              </Flex>
             </Flex>
-          </Flex>
+          ) : (
+            <Flex
+              flexDirection={['column', 'row']}
+              bg={'primary-2x-light'}
+              p={[3, 4]}
+              alignItems={['center', 'auto']}
+            >
+              <Flex
+                flexDirection="column"
+                alignItems={['center', 'flex-start']}
+              >
+                <Text fontWeight={4}>
+                  {isOpen && TEXT[requestType].complete}
+                </Text>
+              </Flex>
+            </Flex>
+          )}
         </Box>
       </Card>
     </Modal>

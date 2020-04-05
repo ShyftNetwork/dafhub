@@ -22,7 +22,6 @@ const handler = async (req, res) => {
   if (req.method === 'POST') {
     const data = await core.identityManager.getIdentities()
     const credential = await signVC(data[0].did, req.body.subject)
-    // const string = JSON.stringify(credential)
 
     res.status(200).json({ data: credential })
   }

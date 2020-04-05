@@ -26,6 +26,8 @@ import Header from '../components/Header'
 const Welcome = props => {
   const [isOpen, setIsOpen] = useState(false)
   const [requestType, setRequestType] = useState('')
+  const [sdrCredentials, setSdrCredentials] = useState()
+  const [loading, setLoading] = useState(false)
   const closeModal = () => {
     setIsOpen(false)
   }
@@ -55,14 +57,15 @@ const Welcome = props => {
     }
 
     if (shouldWait) {
-      openModal()
       setRequestType('CREDENTIAL_ISSUE')
+      setLoading(true)
+      openModal()
     }
 
     const response = await walletConnector.sendCustomRequest(customRequest)
 
     if (shouldWait && response === 'CREDENTIAL_ACCEPTED') {
-      closeModal()
+      setLoading(false)
     }
   }
 
@@ -81,15 +84,17 @@ const Welcome = props => {
       params: [data],
     }
 
-    console.log(customRequest)
+    setLoading(true)
+    setRequestType('SELECTIVE_DISCLOSURE_RESPONSE')
+    openModal()
 
     const response = await walletConnector.sendCustomRequest(customRequest)
 
     if (response) {
-      const { data: message } = await useNewMessage(response)
-      const { data: credentials } = await useCredentials(message.id)
-
+      const { data: credentials } = await useCredentials(response)
       console.log(credentials)
+      setSdrCredentials(credentials)
+      setLoading(false)
     }
   }
 
@@ -97,7 +102,13 @@ const Welcome = props => {
     <main>
       <PageHead title="Dafhub" description="Demo of daf + walletconnect" />
       <Box>
-        <RequestModal isOpen={isOpen} requestType={requestType} />
+        <RequestModal
+          isOpen={isOpen}
+          closeModal={closeModal}
+          requestType={requestType}
+          sdrCredentials={sdrCredentials}
+          loading={loading}
+        />
         <Header loggedIn />
 
         <Box p={4}>
