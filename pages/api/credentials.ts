@@ -2,7 +2,7 @@ import { core, dataStore } from '../../daf/setup'
 import { Message } from 'daf-core'
 
 const createMessage = async (message: string) => {
-  return await core.validateMessage(
+  const msg = await core.validateMessage(
     new Message({
       raw: message,
       meta: {
@@ -10,6 +10,8 @@ const createMessage = async (message: string) => {
       },
     }),
   )
+  await dataStore.saveMessage(msg)
+  return msg
 }
 
 export default async (req, res) => {

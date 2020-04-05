@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react'
+import { useContext, useState, useEffect } from 'react'
 import {
   Box,
   Button,
@@ -18,9 +18,8 @@ import RequestModal from '../components/RequestModal'
 import ContentBlock from '../components/ContentBlock'
 import useSignVC from '../hooks/use-sign-vc'
 import useSignSDR from '../hooks/use-sign-sdr'
-import useNewMessage from '../hooks/use-new-message'
+import useLoggedInUser from '../hooks/use-logged-in-user'
 import useCredentials from '../hooks/use-credentials'
-
 import Header from '../components/Header'
 
 const Welcome = props => {
@@ -28,6 +27,8 @@ const Welcome = props => {
   const [requestType, setRequestType] = useState('')
   const [sdrCredentials, setSdrCredentials] = useState()
   const [loading, setLoading] = useState(false)
+  const [user, setUser] = useState<any>({})
+
   const closeModal = () => {
     setIsOpen(false)
   }
@@ -37,6 +38,23 @@ const Welcome = props => {
   const { killSession, address, walletConnector } = useContext(
     WalletConnectContext,
   )
+
+  const getUser = async () => {
+    if (!walletConnector) {
+      return
+    }
+
+    const { accounts } = walletConnector
+    const address = accounts[0]
+    const { data: user } = await useLoggedInUser(address)
+
+    console.log(user)
+    setUser(user)
+  }
+
+  useEffect(() => {
+    getUser()
+  }, [walletConnector, sdrCredentials])
 
   const receiveCredential = async (shouldWait: boolean) => {
     if (!walletConnector) {
@@ -113,7 +131,9 @@ const Welcome = props => {
 
         <Box p={4}>
           <Box>
-            <Heading as={'h2'}>Hey username!</Heading>
+            <Heading as={'h2'}>
+              Hey {user && user.name ? user.name : 'there'}!
+            </Heading>
           </Box>
 
           <Box mt={4}>
