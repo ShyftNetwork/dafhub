@@ -1,7 +1,15 @@
 import { core, dataStore } from '../../daf/setup'
+import { Claim } from 'daf-core'
 
 const getUser = async (did: string) => {
-  return await dataStore.popularClaimForDid(did, 'name')
+  const claims = await Claim.find({
+    where: {
+      subject: did,
+      type: 'name',
+    },
+  })
+
+  return claims.reverse()[0].value
 }
 
 const handler = async (req, res) => {
