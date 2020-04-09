@@ -9,12 +9,12 @@ const getUser = async (did: string) => {
     },
   })
 
-  return claims.reverse()[0].value
+  return claims && claims[0] && claims.reverse()[0].value
 }
 
 const handler = async (req, res) => {
   const name = await getUser(req.query.did)
-  res.status(200).json({ data: { name, profileImage: '' } })
+  res.status(200).json({ data: { name: name ? name : '', profileImage: '' } })
 }
 
 export default handler
