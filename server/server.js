@@ -10,10 +10,11 @@ const { createConnection } = require('typeorm')
 const Daf = require('daf-core')
 
 const port = process.env.PORT || 3000
+const DATABASE_URL = process.env.DATABASE_URL || null
 
 const config = {
-  type: 'sqlite',
-  database: './database.sqlite',
+  type: DATABASE_URL ? 'postgres' : 'sqlite',
+  database: DATABASE_URL ? DATABASE_URL : './database.sqlite',
   synchronize: true,
   logging: false,
   entities: [...Daf.Entities],
