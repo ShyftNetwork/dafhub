@@ -40,7 +40,7 @@ function MyApp({ Component, pageProps }) {
    */
   const init = async () => {
     const newWalletConnector = new WalletConnect({
-      bridge: 'https://bridge.walletconnect.org', // Required
+      bridge: 'https://bridge.walletconnect.org',
     })
 
     /**

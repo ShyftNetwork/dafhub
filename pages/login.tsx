@@ -42,7 +42,7 @@ const Login = () => {
 
   return (
     <main>
-      <PageHead title="Dafhub" description="Demo of daf + walletconnect" />
+      <PageHead title="Dafhubs" description="Demo of daf + walletconnect" />
       <Box>
         <Header loggedIn={false} />
         <Box
