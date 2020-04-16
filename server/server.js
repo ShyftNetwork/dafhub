@@ -11,14 +11,22 @@ const Daf = require('daf-core')
 
 const port = process.env.PORT || 3000
 const DATABASE_URL = process.env.DATABASE_URL || null
-
-const config = {
-  type: DATABASE_URL ? 'postgres' : 'sqlite',
-  database: DATABASE_URL ? DATABASE_URL : './database.sqlite',
+const commonConfig = {
   synchronize: true,
   logging: false,
   entities: [...Daf.Entities],
 }
+const serverConfig = {
+  type: 'postgres',
+  url: DATABASE_URL,
+  ...commonConfig,
+}
+const localConfig = {
+  type: 'sqlite',
+  database: './database.sqlite',
+  ...commonConfig,
+}
+const config = DATABASE_URL ? serverConfig : localConfig
 
 app.prepare().then(() => {
   createConnection(config)
