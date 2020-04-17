@@ -1,0 +1,14 @@
+{
+  "name": "Dafhub",
+  "description": "A barebones DAF + WalletConnect example",
+  "repository": "https://github.com/uport-project/dafhub",
+  "keywords": [
+    "node",
+    "daf",
+    "daf-mobile",
+    "nextjs",
+    "identity",
+    "verifiable-credentials"
+  ],
+  "addons": ["heroku-postgresql:hobby-dev"]
+}
