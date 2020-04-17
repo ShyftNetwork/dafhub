@@ -2,7 +2,7 @@ import { agent } from '../../daf/setup'
 import { ActionSignW3cVc, ActionTypes } from 'daf-w3c'
 
 const signVC = async (iss, sub): Promise<string> => {
-  return await agent.handleAction({
+  const vc = await agent.handleAction({
     type: ActionTypes.signCredentialJwt,
     data: {
       issuer: iss,
@@ -14,6 +14,8 @@ const signVC = async (iss, sub): Promise<string> => {
       },
     },
   } as ActionSignW3cVc)
+
+  return vc._raw
 }
 
 const handler = async (req, res) => {

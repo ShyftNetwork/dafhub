@@ -2,7 +2,6 @@ import * as Daf from 'daf-core'
 import * as DidJwt from 'daf-did-jwt'
 import * as W3c from 'daf-w3c'
 import * as SD from 'daf-selective-disclosure'
-import * as TG from 'daf-trust-graph'
 import * as URL from 'daf-url'
 import * as DafEthrDid from 'daf-ethr-did'
 import { KeyManagementSystem } from 'daf-libsodium'
@@ -35,7 +34,7 @@ const getOrCreateDbConnection = async (): Promise<Connection> => {
     // @ts-ignore -> It's looking for a driver for expo?
     return createConnection(config)
   }
-} 
+}
 
 const dbConnection = getOrCreateDbConnection()
 const infuraProjectId = '5ffc47f65c4042ce847ef66a3fa70d4c'
