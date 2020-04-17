@@ -1,11 +1,11 @@
-import { core } from '../../daf/setup'
-import * as SD from 'daf-selective-disclosure'
+import { agent } from '../../daf/setup'
+import { ActionSignSdr, ActionTypes } from 'daf-selective-disclosure'
 
 const signSdr = async (iss, threadId) => {
-  return await core.handleAction({
-    type: SD.ActionTypes.signSdr,
-    did: iss,
+  return await agent.handleAction({
+    type: ActionTypes.signSdr,
     data: {
+      issuer: iss,
       tag: threadId,
       claims: [
         {
@@ -15,12 +15,12 @@ const signSdr = async (iss, threadId) => {
         },
       ],
     },
-  } as SD.ActionSignSdr)
+  } as ActionSignSdr)
 }
 
 export default async (req, res) => {
   if (req.method === 'POST') {
-    const data = await core.identityManager.getIdentities()
+    const data = await agent.identityManager.getIdentities()
     const sdr = await signSdr(data[0].did, req.body.threadId)
 
     if (sdr) {

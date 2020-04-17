@@ -1,17 +1,10 @@
-import { core, dataStore } from '../../daf/setup'
-import { Message } from 'daf-core'
+import { agent } from '../../daf/setup'
 
 const createMessage = async (message: string) => {
-  const msg = await core.validateMessage(
-    new Message({
-      raw: message,
-      meta: {
-        type: 'walletConnect',
-      },
-    }),
-  )
-  await dataStore.saveMessage(msg)
-  return msg
+  return await agent.handleMessage({
+    raw: message,
+    metaData: [{ type: 'walletConnect' }],
+  })
 }
 
 export default async (req, res) => {

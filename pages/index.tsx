@@ -1,6 +1,6 @@
 import { Box, Loader } from 'rimble-ui'
 import PageHead from '../components/PageHead'
-import { core } from '../daf/setup'
+import { agent } from '../daf/setup'
 
 const Welcome = ({ issuer }) => {
   console.log('Issuer', issuer)
@@ -21,14 +21,12 @@ const Welcome = ({ issuer }) => {
 }
 
 export async function getServerSideProps(context) {
-  await core.setupServices()
-  await core.listen()
+  const data = await agent.identityManager.getIdentities()
 
-  const data = await core.identityManager.getIdentities()
-
+  //** Move this monkey check to the server set up after converting to TS so it will check before running the app */
   if (data.length === 0) {
     console.log('Creating issuer identity')
-    await core.identityManager.createIdentity('rinkeby-ethr-did')
+    await agent.identityManager.createIdentity('rinkeby-ethr-did')
   } else {
     console.log('Issuer identity already exists', data[0].did)
   }
