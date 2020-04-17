@@ -1,55 +1,59 @@
 import * as Daf from 'daf-core'
-import * as DS from 'daf-data-store'
 import * as DidJwt from 'daf-did-jwt'
 import * as W3c from 'daf-w3c'
 import * as SD from 'daf-selective-disclosure'
 import * as TG from 'daf-trust-graph'
-import * as DBG from 'daf-debug'
 import * as URL from 'daf-url'
 import * as DafEthrDid from 'daf-ethr-did'
-import * as DafLibSodium from 'daf-libsodium'
+import { KeyManagementSystem } from 'daf-libsodium'
 import { DafResolver } from 'daf-resolver'
+import * as DIDComm from 'daf-did-comm'
+import { createConnection } from 'typeorm'
 
-const infuraProjectId = '5ffc47f65c4042ce847ef66a3fa70d4c'
-
-let didResolver = new DafResolver({ infuraProjectId })
-
-const identityProviders = [
-  new DafEthrDid.IdentityProvider({
-    kms: new DafLibSodium.KeyManagementSystem(new Daf.KeyStore()),
-    identityStore: new Daf.IdentityStore('rinkeby-ethr'),
-    network: 'rinkeby',
-    rpcUrl: 'https://rinkeby.infura.io/v3/' + infuraProjectId,
-  }),
-]
-const serviceControllers = []
-
-const messageValidator = new DBG.MessageValidator()
-messageValidator
-  .setNext(new URL.MessageValidator())
-  .setNext(new DidJwt.MessageValidator())
-  .setNext(new W3c.MessageValidator())
-  .setNext(new SD.MessageValidator())
-
-const actionHandler = new DBG.ActionHandler()
-actionHandler
-  .setNext(new TG.ActionHandler())
-  .setNext(new W3c.ActionHandler())
-  .setNext(new SD.ActionHandler())
-
-export const dataStore = new DS.DataStore()
-export const core = new Daf.Core({
-  identityProviders,
-  serviceControllers,
-  didResolver,
-  messageValidator,
-  actionHandler,
-})
-
-export const config = {
-  type: 'sqlite',
-  database: './database.sqlite',
+const DATABASE_URL = process.env.DATABASE_URL || null
+const commonConfig = {
   synchronize: true,
   logging: false,
   entities: [...Daf.Entities],
 }
+const serverConfig = {
+  type: 'postgres',
+  url: DATABASE_URL,
+  ...commonConfig,
+}
+const localConfig = {
+  type: 'sqlite',
+  database: './database.sqlite',
+  ...commonConfig,
+}
+const config = DATABASE_URL ? serverConfig : localConfig
+
+// @ts-ignore -> It's looking for a driver for expo?
+const dbConnection = createConnection(config)
+const infuraProjectId = '5ffc47f65c4042ce847ef66a3fa70d4c'
+let didResolver = new DafResolver({ infuraProjectId })
+const rinkebyIdentityProvider = new DafEthrDid.IdentityProvider({
+  kms: new KeyManagementSystem(new Daf.KeyStore(dbConnection)),
+  identityStore: new Daf.IdentityStore('rinkeby-ethr', dbConnection),
+  network: 'rinkeby',
+  rpcUrl: 'https://rinkeby.infura.io/v3/' + infuraProjectId,
+})
+const messageHandler = new URL.UrlMessageHandler()
+messageHandler
+  .setNext(new URL.UrlMessageHandler())
+  .setNext(new DidJwt.JwtMessageHandler())
+  .setNext(new W3c.W3cMessageHandler())
+  .setNext(new SD.SdrMessageHandler())
+
+const actionHandler = new DIDComm.DIDCommActionHandler()
+actionHandler
+  .setNext(new W3c.W3cActionHandler())
+  .setNext(new SD.SdrActionHandler())
+
+export const agent = new Daf.Agent({
+  dbConnection,
+  didResolver,
+  identityProviders: [rinkebyIdentityProvider],
+  actionHandler,
+  messageHandler,
+})

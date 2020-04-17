@@ -1,4 +1,3 @@
-import { core, dataStore } from '../../daf/setup'
 import { Claim } from 'daf-core'
 
 const getUser = async (did: string) => {
@@ -13,8 +12,13 @@ const getUser = async (did: string) => {
 }
 
 const handler = async (req, res) => {
-  const name = await getUser(req.query.did)
-  res.status(200).json({ data: { name: name ? name : '', profileImage: '' } })
+  // const name = await getUser(req.query.did)
+  res.status(200).json({ data: { name: 'Test', profileImage: '' } })
+  // if (name) {
+  //   res.status(200).json({ data: { name: '', profileImage: '' } })
+  // } else {
+  //   res.status(200).json({ data: { name: name, profileImage: '' } })
+  // }
 }
 
 export default handler
