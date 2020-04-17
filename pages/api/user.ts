@@ -1,24 +1,29 @@
 import { Claim } from 'daf-core'
 
 const getUser = async (did: string) => {
-  const claims = await Claim.find({
+  const claim = await Claim.findOne({
     where: {
       subject: did,
       type: 'name',
     },
+    order: {
+      issuanceDate: 'DESC',
+    },
   })
-
-  return claims && claims[0] && claims.reverse()[0].value
+  return claim && claim.value
 }
 
 const handler = async (req, res) => {
-  // const name = await getUser(req.query.did)
-  res.status(200).json({ data: { name: 'Test', profileImage: '' } })
-  // if (name) {
-  //   res.status(200).json({ data: { name: '', profileImage: '' } })
-  // } else {
-  //   res.status(200).json({ data: { name: name, profileImage: '' } })
-  // }
+  try {
+    const name = await getUser(req.query.did)
+    if (name) {
+      res.status(200).json({ data: { name, profileImage: '' } })
+    } else {
+      res.status(200).json({ data: { name: 'Guest', profileImage: '' } })
+    }
+  } catch (err) {
+    res.status(200).json({ data: { name: 'Guest', profileImage: '' } })
+  }
 }
 
 export default handler
