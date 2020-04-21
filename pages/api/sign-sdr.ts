@@ -1,12 +1,17 @@
 import { agent } from '../../daf/setup'
 import { ActionSignSdr, ActionTypes } from 'daf-selective-disclosure'
 
-const signSdr = async (iss, threadId) => {
+const dev = process.env.NODE_ENV !== 'production'
+const protocol = dev ? 'http://' : 'https://'
+
+const signSdr = async (iss, threadId, host) => {
+  console.log(host)
   return await agent.handleAction({
     type: ActionTypes.signSdr,
     data: {
       issuer: iss,
       tag: threadId,
+      replyUrl: protocol + host + '/api/message',
       claims: [
         {
           reason: 'We will show this on your profile',
@@ -21,7 +26,7 @@ const signSdr = async (iss, threadId) => {
 export default async (req, res) => {
   if (req.method === 'POST') {
     const data = await agent.identityManager.getIdentities()
-    const sdr = await signSdr(data[0].did, req.body.threadId)
+    const sdr = await signSdr(data[0].did, req.body.threadId, req.headers.host)
 
     if (sdr) {
       res.status(200).json({ data: sdr })
