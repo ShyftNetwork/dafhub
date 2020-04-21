@@ -28,6 +28,7 @@ const Welcome = props => {
   const [sdrCredentials, setSdrCredentials] = useState()
   const [loading, setLoading] = useState(false)
   const [user, setUser] = useState<any>({})
+  const [hasError, setError] = useState(false)
 
   const closeModal = () => {
     setIsOpen(false)
@@ -75,15 +76,20 @@ const Welcome = props => {
     }
 
     if (shouldWait) {
+      setError(false)
       setRequestType('CREDENTIAL_ISSUE')
       setLoading(true)
       openModal()
     }
 
-    const response = await walletConnector.sendCustomRequest(customRequest)
-
-    if (shouldWait && response === 'CREDENTIAL_ACCEPTED') {
+    try {
+      const response = await walletConnector.sendCustomRequest(customRequest)
+      if (shouldWait && response === 'CREDENTIAL_ACCEPTED') {
+        setLoading(false)
+      }
+    } catch (error) {
       setLoading(false)
+      setError(true)
     }
   }
 
@@ -102,17 +108,21 @@ const Welcome = props => {
       params: [data],
     }
 
+    setError(false)
     setLoading(true)
     setRequestType('SELECTIVE_DISCLOSURE_RESPONSE')
     openModal()
 
-    const response = await walletConnector.sendCustomRequest(customRequest)
-
-    if (response) {
-      const { data: credentials } = await useCredentials(response)
-      console.log(credentials)
-      setSdrCredentials(credentials)
+    try {
+      const response = await walletConnector.sendCustomRequest(customRequest)
+      if (response) {
+        const { data: credentials } = await useCredentials(response)
+        setSdrCredentials(credentials)
+        setLoading(false)
+      }
+    } catch (error) {
       setLoading(false)
+      setError(true)
     }
   }
 
@@ -126,6 +136,7 @@ const Welcome = props => {
           requestType={requestType}
           sdrCredentials={sdrCredentials}
           loading={loading}
+          hasError={hasError}
         />
         <Header loggedIn />
 
@@ -134,6 +145,10 @@ const Welcome = props => {
             <Heading as={'h2'}>
               Hey {user && user.name ? user.name : 'there'}!
             </Heading>
+            <Text>
+              Receive veriable credentials and update your username with a
+              selective disclosure request
+            </Text>
           </Box>
 
           <Box mt={4}>
@@ -143,7 +158,7 @@ const Welcome = props => {
             <ContentBlock
               title={'Receive credential with callback'}
               text={
-                'Issue a credential from DafHub to your mobile. This will wait for you to accept the credential'
+                'Issue a credential from DafHub to your mobile. This will wait for you to accept the credential.'
               }
               action={() => receiveCredential(true)}
               buttonText={'Receive'}
@@ -157,10 +172,8 @@ const Welcome = props => {
               buttonText={'Receive'}
             />
             <ContentBlock
-              title={'Request credentials'}
-              text={
-                'Gwei based on a fundamental analysis although Zilliqa froze some safe ICO! Since Basic Attention Token detected the stablecoin'
-              }
+              title={'Update username'}
+              text={'Issue a credential request (SDR) to update your username.'}
               action={requestUsername}
               buttonText={'Request'}
             />
@@ -173,10 +186,11 @@ const Welcome = props => {
             buttonText={'Issue'}
           /> */}
           </Box>
-          <Box mt={6}>
+          <Box mt={5} mb={4}>
             <Heading as={'h3'}>Ethereum Signing</Heading>
+            <Text>Coming soon</Text>
           </Box>
-          <Box flexDirection={'row'} display={'flex'} mt={3}>
+          <Box flexDirection={'row'} display={'flex'} mt={3} opacity={0.3}>
             <ContentBlock
               title={'Send Transaction*'}
               text={
@@ -184,6 +198,7 @@ const Welcome = props => {
               }
               action={() => {}}
               buttonText={'Send'}
+              buttonDisabled
             />
             <ContentBlock
               title={'Personal Sign'}
@@ -192,6 +207,7 @@ const Welcome = props => {
               }
               action={() => {}}
               buttonText={'Sign'}
+              buttonDisabled
             />
             <ContentBlock
               title={'Sign Eth Typed Data'}
@@ -200,6 +216,7 @@ const Welcome = props => {
               }
               action={() => {}}
               buttonText={'Sign'}
+              buttonDisabled
             />
           </Box>
         </Box>

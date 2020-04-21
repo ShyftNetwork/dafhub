@@ -18,7 +18,11 @@ const ContentBlock = props => {
         <Text as={'p'}>{props.text}</Text>
       </Box>
       <Box>
-        <Button width={'100%'} onClick={props.action}>
+        <Button
+          width={'100%'}
+          onClick={props.action}
+          disabled={props.buttonDisabled}
+        >
           {props.buttonText}
         </Button>
       </Box>

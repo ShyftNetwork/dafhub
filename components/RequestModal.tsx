@@ -22,6 +22,7 @@ const TEXT: { [index: string]: { [index: string]: string } } = {
     response: 'Waiting for you to accept...',
     complete:
       'Great! You have accepted the credential. You can close this modal now.',
+    error: 'Credential was rejected by user',
   },
   SELECTIVE_DISCLOSURE_RESPONSE: {
     title: 'You have been requested to share information',
@@ -29,6 +30,7 @@ const TEXT: { [index: string]: { [index: string]: string } } = {
     response: 'Waiting for you to share...',
     complete:
       'Thanks! We received your credentials. You can now close this modal.',
+    error: 'Request was rejected by user',
   },
 }
 
@@ -38,6 +40,7 @@ const RequestModal = ({
   sdrCredentials,
   closeModal,
   loading,
+  hasError,
 }) => {
   return (
     <Modal isOpen={isOpen}>
@@ -94,7 +97,8 @@ const RequestModal = ({
                 alignItems={['center', 'flex-start']}
               >
                 <Text fontWeight={4}>
-                  {isOpen && TEXT[requestType].complete}
+                  {isOpen && !hasError && TEXT[requestType].complete}
+                  {isOpen && hasError && TEXT[requestType].error}
                 </Text>
               </Flex>
             </Flex>
