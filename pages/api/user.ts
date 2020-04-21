@@ -16,6 +16,7 @@ const getUser = async (did: string) => {
 const handler = async (req, res) => {
   try {
     const name = await getUser(req.query.did)
+
     if (name) {
       res.status(200).json({ data: { name, profileImage: '' } })
     } else {
