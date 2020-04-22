@@ -11,6 +11,7 @@ const signSdr = async (iss, threadId, host) => {
     data: {
       issuer: iss,
       tag: threadId,
+      replyTo: ['Dafhub'],
       replyUrl: protocol + host + '/api/message',
       claims: [
         {
