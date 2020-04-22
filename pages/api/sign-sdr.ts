@@ -5,7 +5,6 @@ const dev = process.env.NODE_ENV !== 'production'
 const protocol = dev ? 'http://' : 'https://'
 
 const signSdr = async (iss, threadId, host) => {
-  console.log(host)
   return await agent.handleAction({
     type: ActionTypes.signSdr,
     data: {
