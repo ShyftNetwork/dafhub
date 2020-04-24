@@ -10,7 +10,7 @@ const signVC = async (iss, sub): Promise<string> => {
       type: ['VerifiableCredential'],
       credentialSubject: {
         id: sub,
-        name: 'DafHub User',
+        kyc: 'Valid',
       },
     },
   } as ActionSignW3cVc)

@@ -18,6 +18,12 @@ const signSdr = async (iss, threadId, host) => {
           essential: true,
           claimType: 'name',
         },
+        {
+          reason: 'You must have the right access',
+          essential: true,
+          claimType: 'kyc',
+          issuers: [{ did: iss, url: '' }],
+        },
       ],
     },
   } as ActionSignSdr)
