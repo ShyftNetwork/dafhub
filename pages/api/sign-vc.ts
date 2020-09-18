@@ -10,7 +10,8 @@ const signVC = async (iss, sub): Promise<string> => {
       type: ['VerifiableCredential'],
       credentialSubject: {
         id: sub,
-        kyc: 'Valid',
+        FirstName: 'Nilangbhai',
+        LastName: 'Vyas'
       },
     },
   } as ActionSignW3cVc)
@@ -21,6 +22,7 @@ const signVC = async (iss, sub): Promise<string> => {
 const handler = async (req, res) => {
   if (req.method === 'POST') {
     const data = await agent.identityManager.getIdentities()
+    console.log('data sign-vc', data, req.body.subject);
     const credential = await signVC(data[0].did, req.body.subject)
 
     res.status(200).json({ data: credential })

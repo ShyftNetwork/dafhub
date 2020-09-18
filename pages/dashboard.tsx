@@ -68,6 +68,8 @@ const Welcome = props => {
 
     const { data } = await useSignVC(address)
 
+    console.log('data', [data])
+
     const customRequest = {
       id: 1000,
       jsonrpc: '2.0',
@@ -172,7 +174,7 @@ const Welcome = props => {
               buttonText={'Receive'}
             />
             <ContentBlock
-              title={'Update username'}
+              title={'Request Credential Info and Update Data'}
               text={'Issue a credential request (SDR) to update your username.'}
               action={requestUsername}
               buttonText={'Request'}

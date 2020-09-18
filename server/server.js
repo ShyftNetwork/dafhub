@@ -1,7 +1,7 @@
 const { createServer } = require('http')
 const { parse } = require('url')
 const next = require('next')
-const port = process.env.PORT || 3000
+const port = process.env.PORT || 3008
 const dev = process.env.NODE_ENV !== 'production'
 const app = next({ dev })
 const handle = app.getRequestHandler()
@@ -44,7 +44,7 @@ app.prepare().then(() => {
     if (err) throw err
     console.log(
       dev
-        ? '> Ready on http://localhost:3000'
+        ? '> Ready on http://localhost:3008'
         : '> Running in production on port ' + port,
     )
   })

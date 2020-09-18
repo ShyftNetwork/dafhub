@@ -16,14 +16,14 @@ const signSdr = async (iss, threadId, host) => {
         {
           reason: 'We will show this on your profile',
           essential: true,
-          claimType: 'name',
+          claimType: 'documentType',
         },
-        {
-          reason: 'You must have the right access',
-          essential: true,
-          claimType: 'kyc',
-          issuers: [{ did: iss, url: '' }],
-        },
+        // {
+        //   reason: 'You must have the correct access',
+        //   essential: true,
+        //   claimType: 'First Name',
+        //   issuers: [{ did: iss, url: '' }],
+        // },
       ],
     },
   } as ActionSignSdr)
