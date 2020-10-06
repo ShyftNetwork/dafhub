@@ -79,6 +79,13 @@ function MyApp({ Component, pageProps }) {
     walletConnector.on('connect', (error, payload) => {
       console.log('walletConnector.on("connect")') // tslint:disable-line
 
+      const challengeRequest = {
+        id: 1000,
+        jsonrpc: '2.0',
+        method: 'challenge_request',
+        params: ['auth'],
+      }
+
       if (error) {
         throw error
       }
@@ -134,6 +141,7 @@ function MyApp({ Component, pageProps }) {
    * Subscribe to connection status
    */
   useEffect(() => {
+    // Check user endpoint
     console.log(connected)
 
     if (connected) {

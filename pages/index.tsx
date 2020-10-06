@@ -21,12 +21,12 @@ const Welcome = ({ issuer }) => {
 }
 
 export async function getServerSideProps(context) {
-  const data = await agent.identityManager.getIdentities()
+  const data = await agent.identityManagerGetIdentities()
 
   //** Move this monkey check to the server set up after converting to TS so it will check before running the app */
   if (data.length === 0) {
     console.log('Creating issuer identity')
-    await agent.identityManager.createIdentity('rinkeby-ethr-did')
+    await agent.identityManagerCreateIdentity({ provider: 'did:ethr:rinkeby' })
   } else {
     console.log('Issuer identity already exists', data[0].did)
   }

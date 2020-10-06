@@ -1,19 +1,42 @@
-import * as Daf from 'daf-core'
-import * as DidJwt from 'daf-did-jwt'
-import * as W3c from 'daf-w3c'
-import * as SD from 'daf-selective-disclosure'
-import * as URL from 'daf-url'
-import * as DafEthrDid from 'daf-ethr-did'
-import { KeyManagementSystem } from 'daf-libsodium'
+import {
+  Agent,
+  createAgent,
+  IIdentityManager,
+  IResolver,
+  IKeyManager,
+  IDataStore,
+  IMessageHandler,
+} from 'daf-core'
+import { MessageHandler } from 'daf-message-handler'
+import { KeyManager } from 'daf-key-manager'
+import { IdentityManager } from 'daf-identity-manager'
 import { DafResolver } from 'daf-resolver'
-import * as DIDComm from 'daf-did-comm'
-import { createConnection, Connection, getConnection } from 'typeorm'
+import { JwtMessageHandler } from 'daf-did-jwt'
+import { CredentialIssuer, ICredentialIssuer, W3cMessageHandler } from 'daf-w3c'
+import { EthrIdentityProvider } from 'daf-ethr-did'
+import { WebIdentityProvider } from 'daf-web-did'
+import { DIDComm, DIDCommMessageHandler, IDIDComm } from 'daf-did-comm'
+import {
+  SelectiveDisclosure,
+  ISelectiveDisclosure,
+  SdrMessageHandler,
+} from 'daf-selective-disclosure'
+import { KeyManagementSystem, SecretBox } from 'daf-libsodium'
+import {
+  Entities,
+  KeyStore,
+  IdentityStore,
+  IDataStoreORM,
+  DataStore,
+  DataStoreORM,
+} from 'daf-typeorm'
+import { createConnection, getConnection, Connection } from 'typeorm'
 
 const DATABASE_URL = process.env.DATABASE_URL || null
 const commonConfig = {
   synchronize: true,
   logging: false,
-  entities: [...Daf.Entities],
+  entities: Entities,
 }
 const serverConfig = {
   type: 'postgres',
@@ -38,29 +61,63 @@ const getOrCreateDbConnection = async (): Promise<Connection> => {
 
 const dbConnection = getOrCreateDbConnection()
 const infuraProjectId = '5ffc47f65c4042ce847ef66a3fa70d4c'
-let didResolver = new DafResolver({ infuraProjectId })
-const rinkebyIdentityProvider = new DafEthrDid.IdentityProvider({
-  kms: new KeyManagementSystem(new Daf.KeyStore(dbConnection)),
-  identityStore: new Daf.IdentityStore('rinkeby-ethr', dbConnection),
-  network: 'rinkeby',
-  rpcUrl: 'https://rinkeby.infura.io/v3/' + infuraProjectId,
+const secretKey =
+  '29739248cad1bd1a0fc4d9b75cd4d2990de535baf5caadfdf8d8f86664aa830c'
+
+const plugins = [
+  new KeyManager({
+    store: new KeyStore(dbConnection, new SecretBox(secretKey)),
+    kms: {
+      local: new KeyManagementSystem(),
+    },
+  }),
+  new IdentityManager({
+    store: new IdentityStore(dbConnection),
+    defaultProvider: 'did:ethr:rinkeby',
+    providers: {
+      'did:ethr:rinkeby': new EthrIdentityProvider({
+        defaultKms: 'local',
+        network: 'rinkeby',
+        rpcUrl: 'https://rinkeby.infura.io/v3/' + infuraProjectId,
+      }),
+      'did:web': new WebIdentityProvider({
+        defaultKms: 'local',
+      }),
+    },
+  }),
+  new DafResolver({ infuraProjectId }),
+  new DataStore(dbConnection),
+  new DataStoreORM(dbConnection),
+  new MessageHandler({
+    messageHandlers: [
+      new DIDCommMessageHandler(),
+      new JwtMessageHandler(),
+      new W3cMessageHandler(),
+      new SdrMessageHandler(),
+    ],
+  }),
+  new DIDComm(),
+  new CredentialIssuer(),
+  new SelectiveDisclosure(),
+]
+
+export const serverAgent = new Agent({
+  context: {
+    // authenticatedDid: 'did:example:3456'
+  },
+  plugins,
 })
-const messageHandler = new URL.UrlMessageHandler()
-messageHandler
-  .setNext(new URL.UrlMessageHandler())
-  .setNext(new DidJwt.JwtMessageHandler())
-  .setNext(new W3c.W3cMessageHandler())
-  .setNext(new SD.SdrMessageHandler())
 
-const actionHandler = new DIDComm.DIDCommActionHandler()
-actionHandler
-  .setNext(new W3c.W3cActionHandler())
-  .setNext(new SD.SdrActionHandler())
-
-export const agent = new Daf.Agent({
-  dbConnection,
-  didResolver,
-  identityProviders: [rinkebyIdentityProvider],
-  actionHandler,
-  messageHandler,
+export const agent = createAgent<
+  IIdentityManager &
+    IKeyManager &
+    IDataStore &
+    IDataStoreORM &
+    IResolver &
+    IMessageHandler &
+    IDIDComm &
+    ICredentialIssuer &
+    ISelectiveDisclosure
+>({
+  plugins,
 })

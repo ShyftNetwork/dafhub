@@ -18,9 +18,10 @@ import RequestModal from '../components/RequestModal'
 import ContentBlock from '../components/ContentBlock'
 import useSignVC from '../hooks/use-sign-vc'
 import useSignSDR from '../hooks/use-sign-sdr'
-import useLoggedInUser from '../hooks/use-logged-in-user'
-import useCredentials from '../hooks/use-credentials'
+import useProfile from '../hooks/use-profile'
 import Header from '../components/Header'
+import useNewMessage from '../hooks/use-new-message'
+import { agent } from '../daf/setup'
 
 const Welcome = props => {
   const [isOpen, setIsOpen] = useState(false)
@@ -47,9 +48,9 @@ const Welcome = props => {
 
     const { accounts } = walletConnector
     const address = accounts[0]
-    const { data: user } = await useLoggedInUser(address)
+    const user = await useProfile(address)
 
-    console.log(user)
+    console.log('USER', user)
     setUser(user)
   }
 
@@ -66,13 +67,13 @@ const Welcome = props => {
 
     console.log(address)
 
-    const { data } = await useSignVC(address)
+    const credential = await useSignVC(address)
 
     const customRequest = {
       id: 1000,
       jsonrpc: '2.0',
       method: shouldWait ? 'issue_credential_callback' : 'issue_credential',
-      params: [data],
+      params: [credential],
     }
 
     if (shouldWait) {
@@ -99,13 +100,13 @@ const Welcome = props => {
     }
 
     const threadId = Date.now()
-    const { data } = await useSignSDR(threadId.toString())
+    const sdr = await useSignSDR(threadId.toString())
 
     const customRequest = {
       id: threadId,
       jsonrpc: '2.0',
       method: 'request_credentials',
-      params: [data],
+      params: [{ proof: { jwt: sdr } }],
     }
 
     setError(false)
@@ -116,8 +117,9 @@ const Welcome = props => {
     try {
       const response = await walletConnector.sendCustomRequest(customRequest)
       if (response) {
-        const { data: credentials } = await useCredentials(response)
-        setSdrCredentials(credentials)
+        console.log(response)
+        await useNewMessage(response.proof.jwt)
+        setSdrCredentials(response.verifiableCredential)
         setLoading(false)
       }
     } catch (error) {
