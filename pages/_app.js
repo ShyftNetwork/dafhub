@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import Router from 'next/router'
 import { WalletConnectContext } from '../components/WalletConnectContext'
+import { ExtensionContext } from '../components/ExtensionContext'
 import WalletConnect from '@walletconnect/browser'
 import { BaseStyles, theme } from 'rimble-ui'
 import { ThemeProvider } from 'styled-components'
@@ -24,6 +25,8 @@ function MyApp({ Component, pageProps }) {
   const [chainId, updateChainId] = useState(null)
   const [connected, updateConnected] = useState(false)
 
+  const [extension, updateExtension] = useState()
+
   /**
    * Reset state back to default
    */
@@ -33,6 +36,20 @@ function MyApp({ Component, pageProps }) {
     updateAddress(null)
     updateAccounts([])
     updateChainId(null)
+  }
+
+  /**
+   * Initialize extension
+   */
+
+  const initExtention = () => {
+    console.log(window.idWallet)
+    updateExtension(window.idWallet)
+  }
+
+  const connectAddress = address => {
+    updateAddress(address)
+    updateConnected(true)
   }
 
   /**
@@ -129,6 +146,15 @@ function MyApp({ Component, pageProps }) {
   }, [])
 
   /**
+   * Wait for load event to do stuff
+   */
+  useEffect(() => {
+    window.addEventListener('load', () => {
+      initExtention()
+    })
+  }, [])
+
+  /**
    * Subscribe to events on change
    */
   useEffect(() => {
@@ -155,11 +181,13 @@ function MyApp({ Component, pageProps }) {
     <WalletConnectContext.Provider
       value={{ init, killSession, address, walletConnector }}
     >
-      <ThemeProvider theme={customTheme}>
-        <BaseStyles id={'base_styles_container'}>
-          <Component {...pageProps} />
-        </BaseStyles>
-      </ThemeProvider>
+      <ExtensionContext.Provider value={{ extension, connectAddress }}>
+        <ThemeProvider theme={customTheme}>
+          <BaseStyles id={'base_styles_container'}>
+            <Component {...pageProps} />
+          </BaseStyles>
+        </ThemeProvider>
+      </ExtensionContext.Provider>
     </WalletConnectContext.Provider>
   )
 }
