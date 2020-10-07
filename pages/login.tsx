@@ -89,6 +89,9 @@ const Login = () => {
                 Zcash thought some robust bear after some moon when someone
                 rejoins lots of digital signature after some dump.
               </Text>
+              <Text as={'p'} color={'#C4C4C4'} fontSize={18} mb={5}>
+                {extension ? 'Extention installed' : 'Not installed'}
+              </Text>
               <Button width={'100%'} onClick={connect}>
                 Connect
               </Button>

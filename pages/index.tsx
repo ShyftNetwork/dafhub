@@ -1,10 +1,9 @@
 import { Box, Loader } from 'rimble-ui'
+import { useContext, useEffect } from 'react'
 import PageHead from '../components/PageHead'
 import { agent } from '../daf/setup'
 
-const Welcome = ({ issuer }) => {
-  console.log('Issuer', issuer)
-
+const Welcome = () => {
   return (
     <main>
       <PageHead title="Dafhub" description="Demo of daf + walletconnect" />
