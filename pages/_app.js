@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, createContext } from 'react'
 import Router from 'next/router'
 import { WalletConnectContext } from '../components/WalletConnectContext'
+import { ExtensionContext } from '../components/ExtensionContext'
+import { AppContext } from '../components/AppContext'
 import WalletConnect from '@walletconnect/browser'
 import { BaseStyles, theme } from 'rimble-ui'
 import { ThemeProvider } from 'styled-components'
@@ -24,6 +26,9 @@ function MyApp({ Component, pageProps }) {
   const [chainId, updateChainId] = useState(null)
   const [connected, updateConnected] = useState(false)
 
+  const [extension, updateExtension] = useState()
+  const [isExtensionUser, updateIsExtensionUser] = useState()
+
   /**
    * Reset state back to default
    */
@@ -33,6 +38,23 @@ function MyApp({ Component, pageProps }) {
     updateAddress(null)
     updateAccounts([])
     updateChainId(null)
+    updateIsExtensionUser(null)
+  }
+
+  /**
+   * Initialize extension
+   */
+
+  const initExtension = () => {
+    if (window.idWallet) {
+      updateExtension(window.idWallet)
+    }
+  }
+
+  const connectAddress = address => {
+    updateAddress(address)
+    updateConnected(true)
+    updateIsExtensionUser(true)
   }
 
   /**
@@ -97,6 +119,7 @@ function MyApp({ Component, pageProps }) {
       updateAddress(address)
       updateAccounts(accounts)
       updateChainId(chainId)
+      updateIsExtensionUser(false)
     })
 
     if (walletConnector.connected) {
@@ -107,6 +130,7 @@ function MyApp({ Component, pageProps }) {
       updateAddress(address)
       updateChainId(chainId)
       updateAccounts(accounts)
+      updateIsExtensionUser(false)
     }
   }
 
@@ -126,6 +150,13 @@ function MyApp({ Component, pageProps }) {
    */
   useEffect(() => {
     init()
+  }, [])
+
+  /**
+   * Wait for load event to do stuff
+   */
+  useEffect(() => {
+    initExtension()
   }, [])
 
   /**
@@ -155,11 +186,17 @@ function MyApp({ Component, pageProps }) {
     <WalletConnectContext.Provider
       value={{ init, killSession, address, walletConnector }}
     >
-      <ThemeProvider theme={customTheme}>
-        <BaseStyles id={'base_styles_container'}>
-          <Component {...pageProps} />
-        </BaseStyles>
-      </ThemeProvider>
+      <ExtensionContext.Provider
+        value={{ extension, initExtension, connectAddress }}
+      >
+        <AppContext.Provider value={{ address, isExtensionUser }}>
+          <ThemeProvider theme={customTheme}>
+            <BaseStyles id={'base_styles_container'}>
+              <Component {...pageProps} />
+            </BaseStyles>
+          </ThemeProvider>
+        </AppContext.Provider>
+      </ExtensionContext.Provider>
     </WalletConnectContext.Provider>
   )
 }

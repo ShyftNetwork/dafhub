@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react'
+import { useContext, useState, useEffect } from 'react'
 import {
   Box,
   Heading,
@@ -14,14 +14,12 @@ import {
 } from 'rimble-ui'
 import PageHead from '../components/PageHead'
 import { WalletConnectContext } from '../components/WalletConnectContext'
+import { ExtensionContext } from '../components/ExtensionContext'
 import Header from '../components/Header'
-import fetcher from '../libs/fetch'
-import useSWR from 'swr'
 
 const Login = () => {
-  // useSWR('/api/check-identity', fetcher)
-
   const { init } = useContext(WalletConnectContext)
+  const { extension, connectAddress } = useContext(ExtensionContext)
   const [uri, updateUri] = useState()
   const [isOpen, setIsOpen] = useState(false)
 
@@ -30,6 +28,13 @@ const Login = () => {
     updateUri(uri)
     openModal(e)
     console.log(uri)
+  }
+
+  const connectExtension = async () => {
+    const identity = await extension.connect()
+    if (identity) {
+      connectAddress(identity.payload.did)
+    }
   }
 
   const closeModal = e => {
@@ -83,6 +88,9 @@ const Login = () => {
               <Text as={'p'} color={'#C4C4C4'} fontSize={18} mb={5}>
                 Zcash thought some robust bear after some moon when someone
                 rejoins lots of digital signature after some dump.
+              </Text>
+              <Text as={'p'} color={'#C4C4C4'} fontSize={18} mb={5}>
+                {extension ? 'Extention installed' : 'Not installed'}
               </Text>
               <Button width={'100%'} onClick={connect}>
                 Connect
@@ -142,16 +150,18 @@ const Login = () => {
                   {uri && <QR size={200} value={uri} />}
                 </Card>
               </Flex>
-              <Text textAlign={['left', 'center']}>
-                Not working?{' '}
-                <Link
-                  href="https://walletconnect.org/apps"
-                  target="_blank"
-                  title="See compatible WalletConnect wallets"
-                >
-                  Check your mobile wallet supports WalletConnect
-                </Link>
-              </Text>
+              {extension && (
+                <>
+                  <Text textAlign={['left', 'center']}>
+                    Alternatively, you can can login with the browser extension
+                  </Text>
+                  <Flex justifyContent="center" mt={5}>
+                    <Button onClick={connectExtension}>
+                      Connect with extension
+                    </Button>
+                  </Flex>
+                </>
+              )}
             </Box>
             <Box p={[3, 4]}>
               <Flex
@@ -165,7 +175,7 @@ const Login = () => {
                   flexDirection="column"
                   alignItems={['center', 'flex-start']}
                 >
-                  <Text fontWeight={4}>Waiting for you to scan...</Text>
+                  <Text fontWeight={4}>Waiting for you to connect...</Text>
                   <Text fontWeight={2}>This won’t cost you any Ether</Text>
                 </Flex>
               </Flex>

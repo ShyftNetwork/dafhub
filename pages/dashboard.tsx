@@ -14,6 +14,8 @@ import {
 } from 'rimble-ui'
 import PageHead from '../components/PageHead'
 import { WalletConnectContext } from '../components/WalletConnectContext'
+import { AppContext } from '../components/AppContext'
+import { ExtensionContext } from '../components/ExtensionContext'
 import RequestModal from '../components/RequestModal'
 import ContentBlock from '../components/ContentBlock'
 import useSignVC from '../hooks/use-sign-vc'
@@ -21,9 +23,12 @@ import useSignSDR from '../hooks/use-sign-sdr'
 import useProfile from '../hooks/use-profile'
 import Header from '../components/Header'
 import useNewMessage from '../hooks/use-new-message'
-import { agent } from '../daf/setup'
 
 const Welcome = props => {
+  const { address, isExtensionUser } = useContext(AppContext)
+  const { extension } = useContext(ExtensionContext)
+  const { killSession, walletConnector } = useContext(WalletConnectContext)
+
   const [isOpen, setIsOpen] = useState(false)
   const [requestType, setRequestType] = useState('')
   const [sdrCredentials, setSdrCredentials] = useState()
@@ -37,20 +42,15 @@ const Welcome = props => {
   const openModal = () => {
     setIsOpen(true)
   }
-  const { killSession, address, walletConnector } = useContext(
-    WalletConnectContext,
-  )
 
   const getUser = async () => {
     if (!walletConnector) {
       return
     }
-
-    const { accounts } = walletConnector
-    const address = accounts[0]
+    // const { accounts } = walletConnector
+    // const address = accounts[0]
     const user = await useProfile(address)
 
-    console.log('USER', user)
     setUser(user)
   }
 
@@ -59,15 +59,15 @@ const Welcome = props => {
   }, [walletConnector, sdrCredentials])
 
   const receiveCredential = async (shouldWait: boolean) => {
-    if (!walletConnector) {
+    if (!isExtensionUser && !walletConnector) {
       return
     }
-    const { accounts } = walletConnector
-    const address = accounts[0]
 
-    console.log(address)
-
+    // const { accounts } = walletConnector
+    // const address = accounts[0]
     const credential = await useSignVC(address)
+
+    console.log(credential)
 
     const customRequest = {
       id: 1000,
@@ -84,9 +84,18 @@ const Welcome = props => {
     }
 
     try {
-      const response = await walletConnector.sendCustomRequest(customRequest)
-      if (shouldWait && response === 'CREDENTIAL_ACCEPTED') {
-        setLoading(false)
+      if (isExtensionUser) {
+        const response = await extension.save(credential, !shouldWait)
+
+        if (shouldWait && response.payload.action === 'CREDENTIAL_ACCEPTED') {
+          setLoading(false)
+        }
+      } else {
+        const response = await walletConnector.sendCustomRequest(customRequest)
+
+        if (shouldWait && response === 'CREDENTIAL_ACCEPTED') {
+          setLoading(false)
+        }
       }
     } catch (error) {
       setLoading(false)
@@ -95,19 +104,11 @@ const Welcome = props => {
   }
 
   const requestUsername = async () => {
-    if (!walletConnector) {
+    if (!isExtensionUser && !walletConnector) {
       return
     }
-
     const threadId = Date.now()
     const sdr = await useSignSDR(threadId.toString())
-
-    const customRequest = {
-      id: threadId,
-      jsonrpc: '2.0',
-      method: 'request_credentials',
-      params: [{ proof: { jwt: sdr } }],
-    }
 
     setError(false)
     setLoading(true)
@@ -115,12 +116,31 @@ const Welcome = props => {
     openModal()
 
     try {
-      const response = await walletConnector.sendCustomRequest(customRequest)
-      if (response) {
-        console.log(response)
-        await useNewMessage(response.proof.jwt)
-        setSdrCredentials(response.verifiableCredential)
-        setLoading(false)
+      console.log(extension)
+      if (isExtensionUser) {
+        const response = await extension.request(sdr)
+        if (response) {
+          console.log(response)
+          await useNewMessage(response.payload.verifiablePresentation.proof.jwt)
+          setSdrCredentials(
+            response.payload.verifiablePresentation.verifiableCredential,
+          )
+          setLoading(false)
+        }
+      } else {
+        const customRequest = {
+          id: threadId,
+          jsonrpc: '2.0',
+          method: 'request_credentials',
+          params: [{ proof: { jwt: sdr } }],
+        }
+        const response = await walletConnector.sendCustomRequest(customRequest)
+        if (response) {
+          console.log(response)
+          await useNewMessage(response.proof.jwt)
+          setSdrCredentials(response.verifiableCredential)
+          setLoading(false)
+        }
       }
     } catch (error) {
       setLoading(false)
@@ -147,10 +167,16 @@ const Welcome = props => {
             <Heading as={'h2'}>
               Hey {user && user.name ? user.name : 'there'}!
             </Heading>
-            <Text>
-              Receive veriable credentials and update your username with a
-              selective disclosure request
-            </Text>
+            <Box
+              backgroundColor={'#d0f3d0'}
+              borderRadius={5}
+              padding={2}
+              mt={3}
+            >
+              <Text>
+                <b>{address}</b>
+              </Text>
+            </Box>
           </Box>
 
           <Box mt={4}>
@@ -179,14 +205,13 @@ const Welcome = props => {
               action={requestUsername}
               buttonText={'Request'}
             />
-            {/* <ContentBlock
-            title={'Issue credential'}
-            text={
-              'Issue a credential to another identity from you '
-            }
-            action={() => {}}
-            buttonText={'Issue'}
-          /> */}
+            <ContentBlock
+              title={'Peer to Peer'}
+              text={'Issue a credential to another identity'}
+              action={() => {}}
+              buttonText={'Issue'}
+              buttonDisabled
+            />
           </Box>
           <Box mt={5} mb={4}>
             <Heading as={'h3'}>Ethereum Signing</Heading>

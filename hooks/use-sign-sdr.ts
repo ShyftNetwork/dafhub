@@ -26,12 +26,12 @@ async function useSignSDR(threadId: string) {
             essential: true,
             claimType: 'name',
           },
-          {
-            reason: 'You must have the right access',
-            essential: true,
-            claimType: 'kyc',
-            issuers: [{ did: signingIdentities[0].did, url: '' }],
-          },
+          // {
+          //   reason: 'You must have the right access',
+          //   essential: true,
+          //   claimType: 'kyc',
+          //   issuers: [{ did: signingIdentities[0].did, url: '' }],
+          // },
         ],
       },
     }),
