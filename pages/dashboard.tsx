@@ -49,7 +49,6 @@ const Welcome = props => {
     const address = accounts[0]
     const { data: user } = await useLoggedInUser(address)
 
-    console.log(user)
     setUser(user)
   }
 
@@ -57,7 +56,7 @@ const Welcome = props => {
     getUser()
   }, [walletConnector, sdrCredentials])
 
-  const receiveCredential = async (shouldWait: boolean) => {
+  const sendCredential = async (shouldWait: boolean) => {
     if (!walletConnector) {
       return
     }
@@ -95,14 +94,14 @@ const Welcome = props => {
     }
   }
 
-  const requestUsername = async () => {
+  const requestCredentials = async () => {
     if (!walletConnector) {
       return
     }
 
     const threadId = Date.now()
     const { data } = await useSignSDR(threadId.toString())
-
+    
     const customRequest = {
       id: threadId,
       jsonrpc: '2.0',
@@ -119,13 +118,22 @@ const Welcome = props => {
       const response = await walletConnector.sendCustomRequest(customRequest)
       if (response) {
         const { data: credentials } = await useCredentials(response)
-        setSdrCredentials(credentials)
+        console.log('creds', credentials[0]._credentialSubject);
+        setSdrCredentials(credentials[0]._credentialSubject)
         setLoading(false)
       }
     } catch (error) {
       setLoading(false)
       setError(true)
     }
+  }
+  const rendorAttributes = async (att) => {
+    return Object.keys(att).map((key, i) => {
+      <p key={i}>
+        <span>Key Name: {key}</span>
+        <span>Value: {att.object[key]}</span>
+      </p>
+    })
   }
 
   return (
@@ -143,42 +151,39 @@ const Welcome = props => {
         <Header loggedIn />
 
         <Box p={4}>
-          <Box>
-            <Heading as={'h2'}>
-              Hey {user && user.name ? user.name : 'there'}!
-            </Heading>
-            <Text>
-              Receive veriable credentials and update your username with a
-              selective disclosure request
-            </Text>
-          </Box>
 
           <Box mt={4}>
             <Heading as={'h3'}>Verifiable Credentials</Heading>
           </Box>
           <Box flexDirection={'row'} display={'flex'} mt={3}>
             <ContentBlock
-              title={'Receive credential with callback'}
+              title={'Step 1: Request Credential Info and Update Data'}
+              text={'Issue a credential request (SDR) to update your username.'}
+              action={requestCredentials}
+              buttonText={'Request'}
+            />
+            <ContentBlock
+              title={'Step2: Check Credential information'}
+              text={user.documentType}
+              action={rendorAttributes}
+              buttonText={'Verified!'}
+            />
+            <ContentBlock
+              title={'Step 3: Send credential with callback'}
               text={
                 'Issue a credential from DafHub to your mobile. This will wait for you to accept the credential.'
               }
-              action={() => receiveCredential(true)}
-              buttonText={'Receive'}
+              action={() => sendCredential(true)}
+              buttonText={'Send'}
             />
-            <ContentBlock
+            {/* <ContentBlock
               title={'Receive credential standard'}
               text={
                 'Issue a credential from DafHub to your mobile. The credential will just appear on your device without a response from you.'
               }
               action={() => receiveCredential(false)}
               buttonText={'Receive'}
-            />
-            <ContentBlock
-              title={'Request Credential Info and Update Data'}
-              text={'Issue a credential request (SDR) to update your username.'}
-              action={requestUsername}
-              buttonText={'Request'}
-            />
+            /> */}
             {/* <ContentBlock
             title={'Issue credential'}
             text={
@@ -188,38 +193,16 @@ const Welcome = props => {
             buttonText={'Issue'}
           /> */}
           </Box>
-          <Box mt={5} mb={4}>
-            <Heading as={'h3'}>Ethereum Signing</Heading>
-            <Text>Coming soon</Text>
+        </Box>
+        <Box p={4}>
+          <Box mb={2}>
+            <Heading as={'h3'}>Credential Information</Heading>
           </Box>
-          <Box flexDirection={'row'} display={'flex'} mt={3} opacity={0.3}>
-            <ContentBlock
-              title={'Send Transaction*'}
-              text={
-                'Gwei based on a fundamental analysis although Zilliqa froze some safe ICO! Since Basic Attention Token detected the stablecoin'
-              }
-              action={() => {}}
-              buttonText={'Send'}
-              buttonDisabled
-            />
-            <ContentBlock
-              title={'Personal Sign'}
-              text={
-                'Gwei based on a fundamental analysis although Zilliqa froze some safe ICO! Since Basic Attention Token detected the stablecoin'
-              }
-              action={() => {}}
-              buttonText={'Sign'}
-              buttonDisabled
-            />
-            <ContentBlock
-              title={'Sign Eth Typed Data'}
-              text={
-                'Gwei based on a fundamental analysis although Zilliqa froze some safe ICO! Since Basic Attention Token detected the stablecoin'
-              }
-              action={() => {}}
-              buttonText={'Sign'}
-              buttonDisabled
-            />
+          <Box>
+            { JSON.stringify(sdrCredentials)  }
+          </Box>
+          <Box>
+
           </Box>
         </Box>
       </Box>

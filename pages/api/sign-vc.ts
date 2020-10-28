@@ -10,8 +10,11 @@ const signVC = async (iss, sub): Promise<string> => {
       type: ['VerifiableCredential'],
       credentialSubject: {
         id: sub,
-        FirstName: 'Nilangbhai',
-        LastName: 'Vyas'
+        AgencyName: 'Passport office Toronto',
+        DocumentType: 'Passport',
+        Name: 'Nilang',
+        Address: '123 Bold St',
+        Country: 'Canada'
       },
     },
   } as ActionSignW3cVc)

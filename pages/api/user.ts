@@ -1,10 +1,10 @@
 import { Claim } from 'daf-core'
 
-const getUser = async (did: string) => {
+const getUser = async (did: string, params: string) => {
   const claim = await Claim.findOne({
     where: {
       subject: did,
-      type: 'name',
+      type: params,
     },
     order: {
       issuanceDate: 'DESC',
@@ -15,13 +15,13 @@ const getUser = async (did: string) => {
 
 const handler = async (req, res) => {
   try {
-    const name = await getUser(req.query.did)
+    const documentType = await getUser(req.query.did, 'documentType')
 
-    if (name) {
-      res.status(200).json({ data: { name, profileImage: '' } })
-    } else {
-      res.status(200).json({ data: { name: 'Guest', profileImage: '' } })
-    }
+    // if (name && address && country) {
+       res.status(200).json({ data: { documentType, profileImage: '' } })
+    // } else {
+    //  res.status(200).json({ data: { name: 'Guest', address: 'NA', country: 'NA', profileImage: '' } })
+    // }
   } catch (err) {
     res.status(200).json({ data: { name: 'Guest', profileImage: '' } })
   }
