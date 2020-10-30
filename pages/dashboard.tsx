@@ -21,14 +21,16 @@ import useSignSDR from '../hooks/use-sign-sdr'
 import useLoggedInUser from '../hooks/use-logged-in-user'
 import useCredentials from '../hooks/use-credentials'
 import Header from '../components/Header'
+import Moment from 'moment'
 
 const Welcome = props => {
   const [isOpen, setIsOpen] = useState(false)
   const [requestType, setRequestType] = useState('')
-  const [sdrCredentials, setSdrCredentials] = useState()
+  const [sdrCredentials, setSdrCredentials] = useState<any>({})
   const [loading, setLoading] = useState(false)
   const [user, setUser] = useState<any>({})
   const [hasError, setError] = useState(false)
+  const [isDisabled, setIsDisabled] = useState(true)
 
   const closeModal = () => {
     setIsOpen(false)
@@ -118,22 +120,19 @@ const Welcome = props => {
       const response = await walletConnector.sendCustomRequest(customRequest)
       if (response) {
         const { data: credentials } = await useCredentials(response)
-        console.log('creds', credentials[0]._credentialSubject);
+        localStorage.removeItem('credData')
+        localStorage.setItem('credData', JSON.stringify(credentials[0]._credentialSubject));
         setSdrCredentials(credentials[0]._credentialSubject)
         setLoading(false)
+        setIsDisabled(true)
       }
     } catch (error) {
       setLoading(false)
       setError(true)
     }
   }
-  const rendorAttributes = async (att) => {
-    return Object.keys(att).map((key, i) => {
-      <p key={i}>
-        <span>Key Name: {key}</span>
-        <span>Value: {att.object[key]}</span>
-      </p>
-    })
+  const handleAttributes = async (att) => {
+    setIsDisabled(false);
   }
 
   return (
@@ -163,17 +162,17 @@ const Welcome = props => {
               buttonText={'Request'}
             />
             <ContentBlock
-              title={'Step2: Check Credential information'}
-              text={user.documentType}
-              action={rendorAttributes}
+              title={'Step2: Check document information'}
+              action={handleAttributes}
               buttonText={'Verified!'}
             />
             <ContentBlock
               title={'Step 3: Send credential with callback'}
               text={
-                'Issue a credential from DafHub to your mobile. This will wait for you to accept the credential.'
+                'Issue a credential from PerseID Hub to your mobile. This will wait for you to accept the credential.'
               }
               action={() => sendCredential(true)}
+              buttonDisabled={isDisabled}
               buttonText={'Send'}
             />
             {/* <ContentBlock
@@ -198,9 +197,37 @@ const Welcome = props => {
           <Box mb={2}>
             <Heading as={'h3'}>Credential Information</Heading>
           </Box>
-          <Box>
+          {/* <Box>
             { JSON.stringify(sdrCredentials)  }
+          </Box> */}
+          <Box>
+            Document Type: { sdrCredentials.documentType  }
           </Box>
+          <Box>
+            First Name: { sdrCredentials.firstName  }
+          </Box>
+          <Box>
+            Middle Name: { sdrCredentials.middleName  }
+          </Box>
+          <Box>
+            Last Name: { sdrCredentials.lastName  }
+          </Box>
+          <Box>
+            Date of Birth: { sdrCredentials.dateOfBirth ? Moment(sdrCredentials.dateOfBirth).format('ll') : '' }
+          </Box>
+          <Box>
+            Expiry Date: { sdrCredentials.expiryDate ? Moment(sdrCredentials.expiryDate).format('ll') : '' }
+          </Box>
+          <Box>
+            Nationality: { sdrCredentials.nationality  }
+          </Box>
+          <Box>
+            Birth Place: { sdrCredentials.birthPlace  }
+          </Box>
+          <Box>
+            Document Number: { sdrCredentials.documentNumber  }
+          </Box>
+          
           <Box>
 
           </Box>

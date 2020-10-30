@@ -61,13 +61,10 @@ const Login = () => {
           >
             <Box width={500} mr={5}>
               <Heading as={'h1'} color={'#FFFFFF'} mb={3} mt={5}>
-                Identity solutions for everyone
+                Welcome to verifiable credential system
               </Heading>
               <Text as={'p'} color={'#C4C4C4'} fontSize={18}>
-                Because Litecoin launched a peer-to-peer price, Monero is wary
-                of some dormant Lambo, and Bitcoin generated few ICO after a
-                ledger because Cardano rejoins many instant airdrop of some
-                consensus point.
+                Powered By PerseID.
               </Text>
             </Box>
 
@@ -81,8 +78,7 @@ const Login = () => {
               justifyContent={'flex-end'}
             >
               <Text as={'p'} color={'#C4C4C4'} fontSize={18} mb={5}>
-                Zcash thought some robust bear after some moon when someone
-                rejoins lots of digital signature after some dump.
+                Let's get started. Connect your identity wallet with PerseID Hub.
               </Text>
               <Button width={'100%'} onClick={connect}>
                 Connect

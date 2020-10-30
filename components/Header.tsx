@@ -36,7 +36,7 @@ const Header = ({ loggedIn }) => {
           mr={2}
         ></Box>
         <Heading as={'h3'} color={'#FFFFFF'} mr={3}>
-          Dafhub
+          PerseID Hub
         </Heading>
         {loggedIn && (
           <Box>

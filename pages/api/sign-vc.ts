@@ -1,7 +1,8 @@
 import { agent } from '../../daf/setup'
 import { ActionSignW3cVc, ActionTypes } from 'daf-w3c'
 
-const signVC = async (iss, sub): Promise<string> => {
+const signVC = async (iss, sub, data?): Promise<string> => {
+  console.log('faltu data is ', data)
   const vc = await agent.handleAction({
     type: ActionTypes.signCredentialJwt,
     data: {
@@ -12,21 +13,20 @@ const signVC = async (iss, sub): Promise<string> => {
         id: sub,
         AgencyName: 'Passport office Toronto',
         DocumentType: 'Passport',
-        Name: 'Nilang',
+        Name: 'Chris',
         Address: '123 Bold St',
         Country: 'Canada'
       },
     },
   } as ActionSignW3cVc)
-
+  console.log('vc._raw', vc, vc._raw)
   return vc._raw
 }
 
 const handler = async (req, res) => {
   if (req.method === 'POST') {
     const data = await agent.identityManager.getIdentities()
-    console.log('data sign-vc', data, req.body.subject);
-    const credential = await signVC(data[0].did, req.body.subject)
+    const credential = await signVC(data[0].did, req.body.subject, false)
 
     res.status(200).json({ data: credential })
   }
