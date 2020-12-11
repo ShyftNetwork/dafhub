@@ -22,6 +22,8 @@ import useLoggedInUser from '../hooks/use-logged-in-user'
 import useCredentials from '../hooks/use-credentials'
 import Header from '../components/Header'
 import Moment from 'moment'
+import base64 from 'base-64'
+import defaultURL from './defaultImage'
 
 const Welcome = props => {
   const [isOpen, setIsOpen] = useState(false)
@@ -31,6 +33,7 @@ const Welcome = props => {
   const [user, setUser] = useState<any>({})
   const [hasError, setError] = useState(false)
   const [isDisabled, setIsDisabled] = useState(true)
+  const [assetData, setassetData] = useState(defaultURL)
 
   const closeModal = () => {
     setIsOpen(false)
@@ -67,7 +70,7 @@ const Welcome = props => {
 
     console.log(address)
 
-    const { data } = await useSignVC(address)
+    const { data } = await useSignVC(address, sdrCredentials)
 
     console.log('data', [data])
 
@@ -113,6 +116,7 @@ const Welcome = props => {
 
     setError(false)
     setLoading(true)
+    setassetData(defaultURL)
     setRequestType('SELECTIVE_DISCLOSURE_RESPONSE')
     openModal()
 
@@ -120,8 +124,6 @@ const Welcome = props => {
       const response = await walletConnector.sendCustomRequest(customRequest)
       if (response) {
         const { data: credentials } = await useCredentials(response)
-        localStorage.removeItem('credData')
-        localStorage.setItem('credData', JSON.stringify(credentials[0]._credentialSubject));
         setSdrCredentials(credentials[0]._credentialSubject)
         setLoading(false)
         setIsDisabled(true)
@@ -133,6 +135,30 @@ const Welcome = props => {
   }
   const handleAttributes = async (att) => {
     setIsDisabled(false);
+  }
+
+  const getAsset = async (id: string) => {
+    try{
+      if(!id || id === '') {
+        return;
+      }
+      const baseUrl = 'https://testnet.burstiq.com/api/burstchain/shyft/ppk_owners/' + id + '/latest';
+      const headers = new Headers()
+      headers.append(
+        'Authorization',
+        'Basic ' + base64.encode('perseid_burstiq@shyft.network:YI&Y61Z2@C3g'),
+      )
+      headers.append('Content-Type', 'application/json')
+      const options = {
+        method: 'GET',
+        headers: headers
+      }
+      const response = await fetch(baseUrl, options)
+      const data = await response.json();
+      setassetData(data.asset_metadata.data);
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   return (
@@ -193,44 +219,46 @@ const Welcome = props => {
           /> */}
           </Box>
         </Box>
-        <Box p={4}>
+        <Box p={4} className='content-box'>
           <Box mb={2}>
             <Heading as={'h3'}>Credential Information</Heading>
           </Box>
           {/* <Box>
             { JSON.stringify(sdrCredentials)  }
           </Box> */}
-          <Box>
+          <Box className='margin-top'>
             Document Type: { sdrCredentials.documentType  }
           </Box>
-          <Box>
+          <Box className='margin-top'>
             First Name: { sdrCredentials.firstName  }
           </Box>
-          <Box>
+          <Box className='margin-top'>
             Middle Name: { sdrCredentials.middleName  }
           </Box>
-          <Box>
+          <Box className='margin-top'>
             Last Name: { sdrCredentials.lastName  }
           </Box>
-          <Box>
+          <Box className='margin-top'>
             Date of Birth: { sdrCredentials.dateOfBirth ? Moment(sdrCredentials.dateOfBirth).format('ll') : '' }
           </Box>
-          <Box>
+          <Box className='margin-top'>
             Expiry Date: { sdrCredentials.expiryDate ? Moment(sdrCredentials.expiryDate).format('ll') : '' }
           </Box>
-          <Box>
+          <Box className='margin-top'>
             Nationality: { sdrCredentials.nationality  }
           </Box>
-          <Box>
+          <Box className='margin-top'>
             Birth Place: { sdrCredentials.birthPlace  }
           </Box>
-          <Box>
+          <Box className='margin-top'>
             Document Number: { sdrCredentials.documentNumber  }
           </Box>
-          
-          <Box>
-
+          <Box className='margin-top'>
+            <Button onClick={() => getAsset(sdrCredentials.assetId)}>Get Document Image </Button>
           </Box>
+        </Box>
+        <Box className='box-size'>
+          <img className='docImage' src={`data:image/jpeg;base64,${assetData}`}/>
         </Box>
       </Box>
     </main>

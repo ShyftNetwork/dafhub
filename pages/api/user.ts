@@ -16,8 +16,9 @@ const getUser = async (did: string, params: string) => {
 
 const handler = async (req, res) => {
   try {
-    let documentType, firstName, lastName, middleName, dateOfBirth, expiryDate, nationality, birthPlace, documentNumber = '';
+    let documentType, firstName, lastName, middleName, dateOfBirth, expiryDate, nationality, birthPlace, assetId, documentNumber = '';
     documentType = await getUser(req.query.did, 'documentType')
+    assetId = await getUser(req.query.did, 'assetId')
     firstName = await getUser(req.query.did, 'firstName')
     lastName = await getUser(req.query.did, 'lastName')
     middleName = await getUser(req.query.did, 'middleName')
@@ -29,15 +30,16 @@ const handler = async (req, res) => {
 
     dateOfBirth = Moment(dateOfBirth).format('MMM DD YYYY')
     expiryDate = Moment(expiryDate).format('MMM DD YYYY')
-
     // if (name && address && country) {
-       res.status(200).json({ data: { documentType, firstName, middleName, lastName, dateOfBirth, expiryDate, nationality, birthPlace, documentNumber, profileImage: '' } })
+       res.status(200).json({ data: { documentType, firstName, middleName, lastName, dateOfBirth, expiryDate, nationality, birthPlace, assetId, documentNumber, profileImage: '' } })
     // } else {
     //  res.status(200).json({ data: { name: 'Guest', address: 'NA', country: 'NA', profileImage: '' } })
     // }
+    
   } catch (err) {
     res.status(200).json({ data: { name: 'Guest', profileImage: '' } })
   }
 }
+
 
 export default handler
