@@ -146,7 +146,7 @@ const Welcome = props => {
       const headers = new Headers()
       headers.append(
         'Authorization',
-        'Basic ' + base64.encode('perseid_burstiq@shyft.network:YI&Y61Z2@C3g'),
+        'Basic ' + base64.encode('perseid_burstiq@shyft.network:9w4OP6Z9xk6%'),
       )
       headers.append('Content-Type', 'application/json')
       const options = {
