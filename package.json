@@ -5,7 +5,11 @@
   "scripts": {
     "dev": "node server/server.js",
     "build": "next build",
+<<<<<<< HEAD
     "start": "NODE_ENV=development node server/server.js -p $PORT"
+=======
+    "start": "NODE_ENV=production node server/server.js -p $PORT"
+>>>>>>> c9eb043... [ more heroku build ]
   },
   "engines": {
     "node": "11.14.x"
