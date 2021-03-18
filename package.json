@@ -5,7 +5,10 @@
   "scripts": {
     "dev": "node server/server.js",
     "build": "next build",
-    "start": "node server/server.js"
+    "start": "NODE_ENV=production node server/server.js -p $PORT"
+  },
+  "engines": {
+    "node": "11.14.x"
   },
   "keywords": [],
   "author": "",
